@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.0';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './config.js';
 import { initLegalView } from './legal-ui.js';
+import { makeIcon } from './icons.js';
 
 const db=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
   auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:false}
@@ -72,6 +73,8 @@ function show(view){
   }
   $('breadcrumb').textContent=views[view];
   document.querySelector('.sidebar').classList.remove('open');
+  $('navScrim').hidden=true;
+  $('menuBtn').setAttribute('aria-expanded','false');
   if(view==='historico'&&organization)loadHistory();
 }
 function renderInvitations(){
@@ -190,7 +193,7 @@ async function changeStatus(task,next){
   }catch(e){task.status=before;renderAll();notify('Não foi possível alterar a situação: '+e.message,true)}
 }
 function taskCard(task){
-  const article=make('article','task-card');
+  const article=make('article','task-card task-priority-'+task.priority);
   const left=make('div');
   left.append(make('span','pill '+task.priority,priorities[task.priority]));
   left.append(make('h3',null,task.title));
@@ -208,12 +211,13 @@ function taskCard(task){
   group.append(buildStatusSelect(task));
   const details=make('button','card-action','Detalhes');
   details.type='button';details.addEventListener('click',()=>openTaskDetail(task));
+  details.prepend(makeIcon('eye','raf-icon-sm'));
   group.append(details);
   if(manage()){
     const edit=make('button','card-action','Editar');edit.type='button';
-    edit.addEventListener('click',()=>openTaskForm(task));group.append(edit);
+    edit.addEventListener('click',()=>openTaskForm(task));edit.prepend(makeIcon('pencil','raf-icon-sm'));group.append(edit);
     const archive=make('button','card-action danger','Arquivar');
-    archive.type='button';archive.addEventListener('click',()=>archiveTask(task));group.append(archive);
+    archive.type='button';archive.addEventListener('click',()=>archiveTask(task));archive.prepend(makeIcon('archive','raf-icon-sm'));group.append(archive);
   }
   right.append(make('span','pill '+task.status,statuses[task.status]||task.status),group);
   article.append(left,right);
@@ -246,7 +250,7 @@ function renderProcesses(){
   for(const process of filtered){
     const row=make('article','process-card');
     const left=make('div','process-info');
-    left.append(make('strong',null,process.cnj_number));
+    left.append(makeIcon('file-text','raf-icon-sm'),make('strong',null,process.cnj_number));
     left.append(make('span',null,process.label||'Sem identificação adicional'));
     left.append(make('small',null,activeTasks().filter(t=>t.process_id===process.id).length+' atividades vinculadas'));
     const actions=make('div','process-actions');
@@ -267,7 +271,10 @@ function renderKanban(){
     col.dataset.status=state;
     const matching=activeTasks().filter(t=>t.status===state);
     const head=make('div','kanban-column-head');
-    head.append(make('h2',null,label),make('span',null,matching.length));
+    const columnTitle=make('h2');
+    const columnIcons={pending:'clipboard-list',in_progress:'clock',waiting:'history',review:'eye',completed:'circle-check'};
+    columnTitle.append(makeIcon(columnIcons[state]),document.createTextNode(label));
+    head.append(columnTitle,make('span',null,matching.length));
     col.append(head);
     col.addEventListener('dragover',e=>{if(writable()){e.preventDefault();col.classList.add('drag-over')}});
     col.addEventListener('dragleave',()=>col.classList.remove('drag-over'));
@@ -289,6 +296,7 @@ function renderKanban(){
       if(task.follow_up_date)card.append(make('p',null,'Acompanhar: '+humanDate(task.follow_up_date)));
       const open=make('button','card-action','Abrir detalhes');
       open.addEventListener('click',()=>openTaskDetail(task));
+      open.prepend(makeIcon('eye','raf-icon-sm'));
       card.append(open);
       card.append(buildStatusSelect(task));
       col.append(card);
@@ -310,9 +318,12 @@ function renderTeam(){
   const list=$('memberList');list.replaceChildren();
   for(const member of members){
     const row=make('div','member-card');
-    const info=make('div');
-    info.append(make('strong',null,memberLabel(member)));
-    info.append(make('small',null,member.user_id===currentUser.id?'Você':member.user_id.slice(0,8)+'…'));
+    const info=make('div','member-identity');
+    const avatar=make('span','member-avatar',memberLabel(member).charAt(0).toLocaleUpperCase('pt-BR'));
+    const identity=make('div');
+    identity.append(make('strong',null,memberLabel(member)));
+    identity.append(make('small',null,member.user_id===currentUser.id?'Você':member.user_id.slice(0,8)+'…'));
+    info.append(avatar,identity);
     const actions=make('div','member-actions');
     if(admin()&&member.user_id!==currentUser.id&&member.user_id!==organization.owner_id){
       const sel=make('select');
@@ -360,8 +371,19 @@ function renderTeam(){
   $('myDisplayName').value=me?.display_name||'';
 }
 function reportMetric(label,value,note){
-  const el=make('article','metric');
-  el.append(make('span',null,label),make('strong',null,value),make('small',null,note));
+  const tones={
+    'Total de tarefas':['pending','clipboard-list'],
+    'Em acompanhamento':['progress','clock'],
+    'Data ultrapassada':['urgent','alert-triangle'],
+    'Atribuídas a mim':['completed','user-round']
+  };
+  const [tone,icon]=tones[label]||['pending','chart-column'];
+  const el=make('article','metric metric-'+tone);
+  const top=make('div','metric-top');
+  const badge=make('span','metric-symbol');
+  badge.append(makeIcon(icon));
+  top.append(make('span',null,label),badge);
+  el.append(top,make('strong',null,value),make('small',null,note));
   return el;
 }
 function reportBars(items){
@@ -688,7 +710,26 @@ function wireUI(){
   for(const button of document.querySelectorAll('[data-go]')){
     button.addEventListener('click',()=>show(button.dataset.go));
   }
-  $('menuBtn').addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('open'));
+  $('menuBtn').setAttribute('aria-expanded','false');
+  $('menuBtn').setAttribute('aria-controls','mainSidebar');
+  $('menuBtn').addEventListener('click',()=>{
+    const open=document.querySelector('.sidebar').classList.toggle('open');
+    $('navScrim').hidden=!open;
+    $('menuBtn').setAttribute('aria-expanded',String(open));
+  });
+  $('navScrim').addEventListener('click',()=>{
+    document.querySelector('.sidebar').classList.remove('open');
+    $('navScrim').hidden=true;
+    $('menuBtn').setAttribute('aria-expanded','false');
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&document.querySelector('.sidebar').classList.contains('open')){
+      document.querySelector('.sidebar').classList.remove('open');
+      $('navScrim').hidden=true;
+      $('menuBtn').setAttribute('aria-expanded','false');
+      $('menuBtn').focus();
+    }
+  });
   $('taskSearch').addEventListener('input',renderTasks);
   $('taskStatus').addEventListener('change',renderTasks);
   $('taskPriorityFilter').addEventListener('change',renderTasks);
