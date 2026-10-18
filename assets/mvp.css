@@ -1,0 +1,95 @@
+/* RAF MVP 1.0 — interface avançada de tarefas, equipes, processos e relatórios. */
+.org-select{max-width:220px;min-width:120px;width:auto;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:700;background:#f2f7fb;color:#234966}
+.quick-actions{display:flex;gap:10px;margin:-8px 0 21px}
+.quick-actions .outline{font-size:13px}
+.extra-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:-3px 0 18px}
+.extra-filters select{background:#fff}
+.task-card{align-items:flex-start}
+.task-card .right{justify-content:end}
+.task-card .action-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-action{border:1px solid #d3e3ef;border-radius:8px;background:#fff;color:#166095;padding:8px 12px;font-size:12px;font-weight:750;min-height:37px}
+.card-action:hover{background:#eaf3fa}
+.card-action.danger{border-color:#ecd0d2;color:#aa404b}
+.card-action:focus-visible{outline:3px solid #90c6eb;outline-offset:2px}
+.task-card .task-assignee{color:#577388;margin-top:8px;font-size:12px}
+.task-card .task-date{color:#6a8598;font-size:12px}
+.task-card .task-date.overdue{color:#be4851;font-weight:700}
+.process-card{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.process-card span{margin-top:7px}
+.process-card .process-info{min-width:0;overflow-wrap:anywhere}
+.process-card .process-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:end}
+.kanban-board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,1fr);gap:14px;overflow-x:auto;padding:4px 4px 16px;scrollbar-width:thin}
+.kanban-column{background:#eaf0f6;border:1px solid #dce6ef;border-radius:14px;padding:13px;min-height:420px;transition:background .12s}
+.kanban-column.drag-over{background:#d5e8fa;border:2px dashed #1261a0}
+.kanban-column-head{display:flex;justify-content:space-between;align-items:center;padding:9px 4px 15px}
+.kanban-column-head h2{font-size:14px;margin:0;color:#21455f}
+.kanban-column-head span{font-size:12px;font-weight:700;color:#416786;background:white;border-radius:7px;padding:5px 9px}
+.kanban-card{background:#fff;border:1px solid #dfe9f2;box-shadow:0 2px 7px #102b4c0b;padding:14px;margin-bottom:10px;border-radius:11px;cursor:grab;overflow-wrap:anywhere}
+.kanban-card:focus-visible{outline:3px solid #85b9dc}
+.kanban-card h3{font-size:13px;margin:6px 0 10px;color:#213f5b}
+.kanban-card p{font-size:11px;color:#71879b;margin:5px 0}
+.kanban-card .card-action{font-size:11px;padding:6px 9px;margin:10px 0 0}
+.kanban-card[aria-disabled=true]{cursor:default}
+.report-buttons{display:flex;gap:10px}
+.report-panel{margin-top:20px}
+.report-panel h2{font-size:17px;margin-top:0;color:#173d5d}
+.report-breakdown{display:grid;gap:15px;margin:16px 0}
+.report-bar-row{display:grid;grid-template-columns:120px 1fr 35px;gap:10px;align-items:center;font-size:12px}
+.report-track{height:9px;border-radius:12px;background:#e4edf5;overflow:hidden}
+.report-track>span{display:block;height:100%;background:#1261a0;border-radius:12px}
+.report-count{text-align:right;font-weight:800;color:#325a78}
+.panel-note{color:#73889a;font-size:12px;line-height:1.6}
+.team-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.92fr);gap:16px}
+.team-layout .panel h2,.profile-panel h2{margin:0 0 16px;font-size:17px;color:#1b4161}
+.stack-form{display:grid;gap:9px}
+.stack-form .primary{margin-top:4px}
+.member-list{display:grid;gap:10px}
+.member-card{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #e6edf4}
+.member-card>div:first-child{min-width:0;overflow-wrap:anywhere}
+.member-card strong{display:block;color:#1c4b70;font-size:13px}
+.member-card small{color:#758b9b}
+.member-card .member-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:end}
+.member-card select{font-size:11px;max-width:120px;min-height:37px;padding:7px}
+.team-invite{padding:13px 0;border-bottom:1px solid #e8eef5;font-size:12px;color:#456b85}
+.team-invite strong{display:block;color:#214b6d;margin:0 0 5px;overflow-wrap:anywhere}
+.team-invite small{display:block;margin-top:4px}
+.team-invite .card-action{margin-top:8px}
+.profile-panel{margin-top:17px}
+.invitation-panel{background:#f0f7fe;border:1px solid #b8d5eb;border-left:4px solid #1261a0;border-radius:13px;padding:17px 20px;margin-bottom:17px}
+.invitation-panel h2{font-size:16px;margin:0 0 8px}
+.invitation-panel .invite-item{padding:13px 0;border-top:1px solid #d5e8f7;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.invitation-panel small{display:block;color:#72879a}
+.invitation-panel .primary{font-size:12px}
+.comment-list{display:grid;gap:9px;max-height:220px;overflow:auto}
+.comment{border:1px solid #e3edf5;border-radius:9px;padding:13px;background:#f9fbff}
+.comment span{display:block;color:#8297a6;font-size:11px;margin-bottom:6px}
+.comment p{font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.modal-wide{width:min(650px,calc(100% - 20px));max-height:93vh;overflow:auto}
+.modal-wide header{position:sticky;top:0;z-index:2;background:#fff}
+.modal-wide h3{font-size:15px;color:#21486b}
+.task-detail-meta{font-size:13px;line-height:1.7;color:#4c6d84;white-space:pre-line}
+.timeline{display:grid;gap:10px}
+.timeline-event{display:flex;gap:12px;padding:14px;border:1px solid #e2ebf3;border-radius:10px;background:#fff}
+.timeline-symbol{display:grid;place-items:center;border-radius:8px;width:30px;height:30px;min-width:30px;background:#e8f2fa;color:#1261a0}
+.timeline-event strong{display:block;color:#234b6b;font-size:13px}
+.timeline-event small{display:block;color:#8298a9;font-size:11px;margin:5px 0}
+.timeline-event p{font-size:12px;color:#547187;margin:4px 0;line-height:1.5}
+#historyList{max-width:980px}
+.panel,.process-card,.task-card{transition:border-color .1s}
+button:focus-visible,select:focus-visible{outline:3px solid #7ab9e8;outline-offset:2px}
+@media(max-width:1100px){.team-layout{grid-template-columns:1fr}.kanban-board{grid-auto-columns:minmax(240px,280px)}}
+@media(max-width:650px){.extra-filters{grid-template-columns:1fr}.quick-actions{flex-wrap:wrap}.quick-actions button{flex:1}.report-buttons{width:100%}.report-buttons button{flex:1}.org-select{max-width:110px}.process-card{align-items:flex-start;flex-direction:column}.process-card .process-actions{width:100%;justify-content:start}.report-bar-row{grid-template-columns:92px 1fr 28px}.member-card{align-items:flex-start;flex-direction:column}.member-card .member-actions{justify-content:start}.kanban-board{margin:0 -6px}.modal-wide .modal-body{padding:15px}}
+@media print{
+  .sidebar,.topbar,.heading button,.quick-actions,.filter-row,.extra-filters,.newTaskBtn,.nav,.menu-btn,.toast{display:none!important}
+  body,.shell,.main,.content{background:white!important;margin:0!important;padding:0!important;max-width:none!important}
+  #relatoriosView{display:block!important}
+  .metric,.panel{box-shadow:none!important;break-inside:avoid}
+}
+
+/* Ensaio público: a página de login é pública; dados dependem da RLS. */
+.homolog-notice{display:grid;gap:5px;background:#f2f7fc;border:1px solid #bcd6e9;border-left:4px solid #1261a0;border-radius:10px;padding:14px 15px;margin:18px 0;color:#375a75;font-size:12px;line-height:1.5}
+.homolog-notice strong{font-size:11px;letter-spacing:.9px;color:#155b90}
+.homolog-banner{margin:0 0 20px;border:1px solid #d5e3f0;background:#f0f6fb;border-radius:9px;padding:11px 16px;color:#456780;font-size:12px;line-height:1.5}
+.homolog-banner strong{color:#1a517e}
+.homolog-banner button{font-size:12px}
+@media print{.homolog-banner{display:none!important}}
