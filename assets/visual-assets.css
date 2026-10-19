@@ -1,0 +1,83 @@
+/* RAF 1.2 — assets próprios do aplicativo; todas URLs relativas a /raf-gestor-homologacao/assets/ */
+/* Camada visual: não altera Supabase, permissões, lógica ou formulários. */
+.auth-shell{padding:28px;background:radial-gradient(ellipse at 18% 17%,#195e96 0%,transparent 35%),linear-gradient(125deg,#092c50,#05192e)}
+.auth-layout{width:min(1120px,100%);min-height:min(770px,calc(100vh - 56px));display:grid;grid-template-columns:minmax(0,1.05fr) minmax(380px,.95fr);background:#fff;border-radius:25px;overflow:hidden;box-shadow:0 32px 95px #00152d7d;border:1px solid #5a9bc044}
+.auth-art{position:relative;min-width:0;overflow:hidden;background:#0a385d;display:flex;align-items:flex-end}
+.auth-art-media,.auth-art-media img{position:absolute;inset:0;width:100%;height:100%;display:block}
+.auth-art-media img{object-fit:cover;object-position:center center}
+.auth-art::before{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(0deg,rgba(4,28,53,.96),rgba(7,44,77,.35) 60%,transparent);z-index:1;pointer-events:none}
+.auth-art-caption{position:relative;z-index:2;max-width:440px;padding:48px 43px 52px;color:#fff}
+.auth-art-caption .art-overline{font-size:10px;letter-spacing:2.2px;font-weight:850;color:#bbdfef}
+.auth-art-caption h2{font-size:clamp(25px,3vw,35px);line-height:1.23;letter-spacing:-.9px;margin:17px 0 13px;color:#fff;font-weight:810}
+.auth-art-caption p{color:#c8deef;font-size:14px;line-height:1.65;margin:0;max-width:360px}
+.auth-layout>.auth-card{align-self:center;justify-self:center;width:min(430px,100%);max-width:none;box-shadow:none;border:0;border-radius:0;padding:42px 42px 40px}
+.auth-layout .logo-lg{background:transparent;border:0;box-shadow:none;width:60px;height:60px;border-radius:16px;padding:0}
+.raf-brand-mark{display:block;object-fit:contain;width:100%;height:100%;min-width:0}
+.auth-layout .logo-lg .raf-brand-mark{width:60px;height:60px;filter:drop-shadow(0 5px 12px #114b833b)}
+.brand-icon .raf-brand-mark{width:45px;height:45px;filter:drop-shadow(0 5px 10px #00162b44)}
+.brand:has(.raf-brand-mark) .brand-icon{background:transparent;border:0;box-shadow:none}
+.auth-layout .auth-card h1{margin-top:8px}
+.auth-layout .auth-card small{line-height:1.5;display:block}
+.auth-layout .homolog-notice{padding:12px 13px;margin:18px 0}
+.dashboard-heading{background-image:linear-gradient(100deg,rgba(6,39,74,.95) 0%,rgba(10,60,100,.91) 44%,rgba(13,81,132,.34) 100%),url("./banners/dashboard-hero.webp");background-size:cover;background-position:center right;background-repeat:no-repeat;min-height:174px}
+.dashboard-heading::after{opacity:.25}
+.dashboard-heading .subtle{max-width:460px}
+.legal-hero{background-image:linear-gradient(100deg,#123f68f5 0%,#103a61eb 58%,#10385a66 100%),url("./banners/base-legal.webp");background-position:center right;background-size:cover;background-repeat:no-repeat;min-height:164px}
+.legal-hero>div:last-child{max-width:790px}
+.empty.empty-illustrated{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:8px;padding:22px 20px 25px;background:radial-gradient(circle at 50% 26%,#f0f7fd 0%,#fff 70%);border:1px dashed #c3d8e8;border-radius:14px;min-height:210px}
+.empty-illustrated .empty-illustration{object-fit:contain;display:block;width:132px;height:132px;max-width:42%;margin:-3px auto 1px}
+.empty-illustrated .empty-title{font-size:14px;font-weight:750;color:#1f4e73;margin:0}
+.empty-illustrated .empty-detail{font-size:12px;line-height:1.45;color:#7c90a2;max-width:340px;margin:0 auto}
+.empty-illustrated .empty-action{margin-top:10px;font-size:12px;min-height:40px;padding:9px 14px}
+.empty-illustrated .empty-action .raf-icon{width:15px;height:15px}
+.onboarding{position:relative;min-height:185px;padding-right:190px;overflow:hidden}
+.onboarding h2,.onboarding p,.onboarding .inline-form{position:relative;z-index:1}
+.onboarding .onboarding-art{position:absolute;right:15px;top:8px;width:165px;height:165px;object-fit:contain}
+.member-list:empty::before{content:"Nenhum membro cadastrado";display:block;color:#71899b;font-size:13px}
+.nav-label,.section-head,.metric,.sidebar{isolation:isolate}
+@media(max-width:980px){
+ .auth-layout{grid-template-columns:minmax(0,.92fr) minmax(355px,1fr);min-height:690px}
+ .auth-art-caption{padding:30px}
+ .auth-layout>.auth-card{padding:28px}
+}
+@media(max-width:760px){
+ .auth-shell{padding:15px;align-items:start}
+ .auth-layout{grid-template-columns:minmax(0,1fr);max-width:530px;min-height:0;border-radius:20px}
+ .auth-art{height:154px;align-items:end}
+ .auth-art-media img{object-position:center 47%}
+ .auth-art::before{inset:0;background:linear-gradient(100deg,#072c55db,#0a477882)}
+ .auth-art-caption{padding:17px 21px}
+ .auth-art-caption .art-overline{font-size:9px;letter-spacing:1.6px}
+ .auth-art-caption h2{font-size:20px;margin:5px 0 0;line-height:1.22}
+ .auth-art-caption p{display:none}
+ .auth-layout>.auth-card{padding:23px 24px 26px;max-width:none}
+ .auth-layout .logo-lg,.auth-layout .logo-lg .raf-brand-mark{height:46px;width:46px}
+ .auth-layout .auth-card h1{font-size:27px}
+ .auth-layout .auth-card form{margin:18px 0 13px}
+ .dashboard-heading{min-height:170px;background-image:linear-gradient(105deg,rgba(6,39,73,.95) 0%,rgba(12,65,107,.85) 65%,rgba(12,75,124,.36) 100%),url("./banners/dashboard-hero-mobile.webp")}
+ .legal-hero{background-position:60% center}
+}
+@media(max-width:560px){
+ .auth-shell{padding:10px}
+ .auth-layout{border-radius:16px}
+ .auth-art{height:122px}
+ .auth-art-caption{padding:13px 19px}
+ .auth-art-caption h2{font-size:17px}
+ .auth-layout>.auth-card{padding:22px 22px 25px}
+ .auth-card .subtle{font-size:13px}
+ .auth-card form label{font-size:12px}
+ .auth-layout .homolog-notice{margin:13px 0;padding:10px}
+ .dashboard-heading{min-height:154px}
+ .empty.empty-illustrated{min-height:180px;padding:17px}
+ .empty-illustrated .empty-illustration{width:104px;height:104px}
+ .onboarding{padding:20px 18px}
+ .onboarding .onboarding-art{opacity:.22;right:-25px;top:5px}
+ .onboarding h2,.onboarding p,.onboarding .inline-form{position:relative;z-index:1}
+}
+@media(prefers-reduced-motion:reduce){.auth-art,.dashboard-heading,.legal-hero{transition:none!important}}
+@media print{
+ .auth-art,.empty-illustrated .empty-illustration,.onboarding-art{display:none!important}
+ .dashboard-heading,.legal-hero{background-image:none!important}
+ .auth-layout{display:block;min-height:0}
+ .dashboard-heading,.legal-hero{color:#122f4d}
+}

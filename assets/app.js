@@ -22,7 +22,36 @@ const make=(tag,cls,text)=>{
   if(text!==undefined)el.textContent=String(text);
   return el;
 };
-const empty=(message)=>make('div','empty',message);
+function empty(message,kind=null,action=null){
+  // Decorate only true empty states, never loading/error messages.
+  if(!kind)return make('div','empty',message);
+  const valid=['tasks','processes','history','invitations','access'];
+  if(!valid.includes(kind))return make('div','empty',message);
+  const wrapper=make('div','empty empty-illustrated');
+  const illustration=make('img','empty-illustration');
+  illustration.src='./assets/illustrations/empty-'+kind+'.svg';
+  illustration.width=132;illustration.height=132;
+  illustration.alt='';
+  illustration.loading='lazy';
+  illustration.decoding='async';
+  wrapper.append(illustration,make('p','empty-title',message));
+  const subtitles={
+    tasks:'Organize sua próxima atividade com prioridade e acompanhamento.',
+    processes:'Vincule suas tarefas a processos fictícios para testar o fluxo.',
+    history:'As operações permitidas ficarão registradas nesta linha do tempo.',
+    invitations:'Convites autorizados aparecerão neste espaço.',
+    access:'Seu acesso depende de autorização e vínculo com uma organização.'
+  };
+  wrapper.append(make('p','empty-detail',subtitles[kind]));
+  if(action){
+    const button=make('button','primary empty-action',action.label);
+    button.type='button';
+    button.prepend(makeIcon(action.icon||'plus','raf-icon-sm'));
+    button.addEventListener('click',action.onClick);
+    wrapper.append(button);
+  }
+  return wrapper;
+}
 const humanDate=value=>value?new Date(value.includes('T')?value:value+'T12:00:00').toLocaleDateString('pt-BR'):'—';
 const admin=()=>role==='admin';
 const manage=()=>role==='admin'||role==='manager';
@@ -226,7 +255,20 @@ function taskCard(task){
 function renderTaskCards(id,arr){
   const host=$(id);
   host.replaceChildren();
-  if(!arr.length){host.append(empty('Nenhuma pendência encontrada.'));return}
+  if(!arr.length){
+    const canClear=id==='allTasks'&&activeTasks().length>0;
+    const action=canClear?{
+      label:'Limpar filtros',icon:'list-filter',onClick:()=>{
+        $('taskSearch').value='';
+        $('taskStatus').value='';
+        $('taskPriorityFilter').value='';
+        $('taskAssigneeFilter').value='';
+        $('taskProcessFilter').value='';
+        renderTasks();
+      }
+    }:(writable()?{label:'Nova pendência',onClick:()=>openTaskForm()}:null);
+    host.append(empty('Nenhuma pendência encontrada.','tasks',action));return;
+  }
   for(const task of arr)host.append(taskCard(task));
 }
 function renderTasks(){
@@ -246,7 +288,14 @@ function renderProcesses(){
   const container=$('processList');container.replaceChildren();
   const q=clean($('processSearch').value).toLocaleLowerCase('pt-BR');
   const filtered=activeProcesses().filter(p=>(p.cnj_number+' '+p.label).toLocaleLowerCase('pt-BR').includes(q));
-  if(!filtered.length){container.append(empty('Nenhum processo encontrado.'));return}
+  if(!filtered.length){
+    const action=activeProcesses().length>0?
+      {label:'Limpar busca',icon:'list-filter',onClick:()=>{
+        $('processSearch').value='';renderProcesses();
+      }}:
+      (writable()?{label:'Cadastrar processo',onClick:()=>openProcessForm()}:null);
+    container.append(empty('Nenhum processo encontrado.','processes',action));return;
+  }
   for(const process of filtered){
     const row=make('article','process-card');
     const left=make('div','process-info');
@@ -365,7 +414,7 @@ function renderTeam(){
     }
     invitationList.append(item);
   }
-  if(!own.length)invitationList.append(empty('Nenhum convite registrado.'));
+  if(!own.length)invitationList.append(empty('Nenhum convite registrado.','invitations'));
   $('inviteForm').hidden=!admin();
   const me=members.find(m=>m.user_id===currentUser.id);
   $('myDisplayName').value=me?.display_name||'';
@@ -439,7 +488,7 @@ async function loadHistory(){
     const data=check(await db.from('raf_task_events').select('id,task_id,actor_id,action,created_at')
       .eq('organization_id',organization.id).order('created_at',{ascending:false}).limit(300));
     host.replaceChildren();
-    if(!data.length){host.append(empty('Sem alterações registradas para os itens acessíveis.'));return}
+    if(!data.length){host.append(empty('Sem alterações registradas para os itens acessíveis.','history'));return}
     for(const event of data)host.append(timelineEvent(event));
   }catch(e){host.replaceChildren(empty('Histórico indisponível: '+e.message))}
 }
@@ -549,7 +598,7 @@ async function loadTaskDiscussion(id){
       card.append(make('p',null,comment.body));host.append(card);
     }
     const timeline=$('taskHistory');timeline.replaceChildren();
-    if(!events.length)timeline.append(empty('Nenhum evento encontrado.'));
+    if(!events.length)timeline.append(empty('Nenhum evento encontrado.','history'));
     for(const event of events)timeline.append(timelineEvent(event));
   }catch(e){$('taskComments').replaceChildren(empty('Erro de leitura: '+e.message))}
 }
