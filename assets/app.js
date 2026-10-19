@@ -225,12 +225,15 @@ function taskCard(task){
   const article=make('article','task-card task-priority-'+task.priority);
   const left=make('div');
   left.append(make('span','pill '+task.priority,priorities[task.priority]));
-  left.append(make('h3',null,task.title));
-  left.append(make('p',null,task.description||'Sem observações'));
   if(task.process_id){
     const process=processes.find(x=>x.id===task.process_id);
-    left.append(make('p','task-date','Processo: '+(process?.cnj_number||'Referência restrita')));
+    const linked=make('p','task-process-number');
+    linked.append(makeIcon('file-text','raf-icon-sm'),
+      document.createTextNode('Processo '+(process?.cnj_number||'Referência restrita')));
+    left.append(linked);
   }
+  left.append(make('h3',null,task.title));
+  if(task.description)left.append(make('p',null,task.description));
   const date=make('p','task-date'+(task.follow_up_date&&task.follow_up_date<new Date().toISOString().slice(0,10)&&task.status!=='completed'?' overdue':''),
     task.follow_up_date?'Acompanhar em '+humanDate(task.follow_up_date):'Sem data de acompanhamento');
   left.append(date);
@@ -512,13 +515,59 @@ function exportCSV(){
   notify('Relatório CSV gerado apenas com os registros acessíveis.');
 }
 
+// A single field handles a CNJ the user pastes with/without separators.
+function formatCnjNumber(value){
+  const digits=clean(value).replace(/[^0-9]/g,'');
+  if(digits.length!==20)return clean(value);
+  return digits.slice(0,7)+'-'+digits.slice(7,9)+'.'+digits.slice(9,13)
+    +'.'+digits.slice(13,14)+'.'+digits.slice(14,16)+'.'+digits.slice(16);
+}
+function showQuickCnjFeedback(){
+  const field=$('taskCnj');
+  const output=$('taskCnjFeedback');
+  const entered=clean(field.value);
+  output.className='quick-feedback';
+  output.textContent='';
+  field.removeAttribute('aria-invalid');
+  if(field.readOnly)return;
+  if(!entered){
+    output.textContent='Sem número? A pendência será registrada como tarefa avulsa.';
+    return;
+  }
+  const formatted=formatCnjNumber(entered);
+  if(!validateCnj(formatted)){
+    output.classList.add('invalid');
+    field.setAttribute('aria-invalid','true');
+    output.textContent='Confira o número CNJ (20 dígitos, incluindo verificadores).';
+    return;
+  }
+  field.value=formatted;
+  output.classList.add('valid');
+  const process=activeProcesses().find(p=>p.cnj_number===formatted);
+  output.textContent=process?'Processo já encontrado. A tarefa será vinculada a ele.':
+    'Processo novo: será cadastrado junto com a pendência.';
+}
 function openTaskForm(task=null){
   if(!organization||!writable())return;
   if(task&&!manage()){notify('Seu perfil pode apenas atualizar a situação desta tarefa.',true);return}
   $('taskForm').reset();
+  $('taskAdvanced').open=!!task;
   $('taskId').value=task?.id||'';
   $('taskDialogTitle').textContent=task?'Editar pendência':'Nova pendência';
-  $('saveTask').textContent=task?'Salvar alterações':'Cadastrar pendência';
+  $('saveTask').textContent=task?'Salvar alterações':'Salvar pendência';
+  $('saveTask').prepend(makeIcon('circle-check','raf-icon-sm'));
+  // One simple field for the process. It is read-only on editing to avoid
+  // implying a second process can be created by the legacy edit endpoint.
+  const linked=processes.find(p=>p.id===task?.process_id);
+  $('taskCnj').value=linked?.cnj_number||'';
+  $('taskCnj').readOnly=!!task;
+  $('taskCnjHelp').textContent=task?
+    'Para trocar por um processo já cadastrado, utilize Mais opções abaixo.':
+    'Digite ou cole o CNJ. Se ainda não existir, o RAF cadastra automaticamente.';
+  $('taskCnjFeedback').textContent='';
+  $('taskCnjFeedback').className='quick-feedback';
+  $('taskCnj').removeAttribute('aria-invalid');
+  $('taskExistingProcessGroup').hidden=!task;
   $('taskTitle').value=task?.title||'';
   $('taskDescription').value=task?.description||'';
   $('taskPriority').value=task?.priority||'normal';
@@ -526,10 +575,10 @@ function openTaskForm(task=null){
   $('taskFollowup').value=task?.follow_up_date||'';
   $('taskAssignee').value=task?.assignee_id||'';
   $('taskProcess').value=task?.process_id||'';
-  // Operators can create new personal tasks but cannot assign to other people.
   $('taskAssignee').disabled=!manage();
-  $('taskProcess').disabled=false;
+  showQuickCnjFeedback();
   $('taskDialog').showModal();
+  requestAnimationFrame(()=>($('taskCnj').readOnly?$('taskTitle'):$('taskCnj')).focus());
 }
 function openProcessForm(process=null){
   if(!organization||!writable())return;
@@ -615,27 +664,52 @@ async function saveTask(event){
   if(!organization||!writable())return;
   const id=$('taskId').value;
   const title=clean($('taskTitle').value);
-  if(title.length<3){notify('Informe um título com pelo menos 3 caracteres.',true);return}
+  if(title.length<3){notify('Informe o que fazer com pelo menos 3 caracteres.',true);$('taskTitle').focus();return}
+  const cnj=clean($('taskCnj').value);
+  if(!id&&cnj&&!validateCnj(formatCnjNumber(cnj))){
+    showQuickCnjFeedback();
+    notify('Número CNJ inválido. Verifique os dígitos antes de salvar.',true);
+    $('taskCnj').focus();return;
+  }
   const row={
     title,description:clean($('taskDescription').value),
     priority:$('taskPriority').value,status:$('taskStatusEdit').value,
-    follow_up_date:$('taskFollowup').value||null,
-    process_id:$('taskProcess').value||null
+    follow_up_date:$('taskFollowup').value||null
   };
   if(manage())row.assignee_id=$('taskAssignee').value||null;
   await run(async()=>{
+    let processMessage='';
     if(id){
       if(!manage())throw Error('A edição detalhada está restrita a gestores.');
+      row.process_id=$('taskProcess').value||null;
       check(await db.from('raf_tasks').update(row)
         .eq('id',id).eq('organization_id',organization.id));
     }else{
-      row.organization_id=organization.id;
-      row.created_by=currentUser.id;
-      check(await db.from('raf_tasks').insert(row));
+      // A single atomic Supabase RPC creates/reuses the CNJ process AND task.
+      // RLS and field-validation live on the PostgreSQL side, not only in JS.
+      const result=check(await db.rpc('raf_create_quick_task',{
+        p_organization_id:organization.id,
+        p_cnj:cnj?formatCnjNumber(cnj):null,
+        p_title:row.title,
+        p_description:row.description,
+        p_priority:row.priority,
+        p_status:row.status,
+        p_follow_up_date:row.follow_up_date,
+        p_assignee_id:row.assignee_id||null
+      }));
+      if(!Array.isArray(result)||result.length!==1||!result[0].task_id){
+        throw Error('Não foi possível confirmar o salvamento da pendência.');
+      }
+      if(result[0].process_id){
+        processMessage=result[0].process_created?
+          'Processo e pendência cadastrados juntos.':
+          'Pendência vinculada ao processo existente.';
+      }else processMessage='Pendência avulsa cadastrada.';
     }
     $('taskDialog').close();
     await loadAll();
-  },id?'Pendência atualizada.':'Pendência criada.');
+    if(processMessage)notify(processMessage);
+  },id?'Pendência atualizada.':null);
 }
 async function saveProcess(event){
   event.preventDefault();
@@ -736,6 +810,18 @@ function wireUI(){
     loadAll().catch(e=>notify('Não foi possível alternar o ambiente: '+e.message,true));
   });
   $('taskForm').addEventListener('submit',saveTask);
+  $('taskCnj').addEventListener('blur',showQuickCnjFeedback);
+  $('taskProcess').addEventListener('change',()=>{
+    if(!$('taskId').value)return;
+    const linked=processes.find(p=>p.id===$('taskProcess').value);
+    $('taskCnj').value=linked?.cnj_number||'';
+  });
+  $('taskCnj').addEventListener('input',()=>{
+    if(!$('taskCnj').value.trim()){
+      showQuickCnjFeedback();return;
+    }
+    $('taskCnjFeedback').textContent='';$('taskCnj').removeAttribute('aria-invalid');
+  });
   $('processForm').addEventListener('submit',saveProcess);
   $('commentForm').addEventListener('submit',submitComment);
   $('inviteForm').addEventListener('submit',submitInvitation);
